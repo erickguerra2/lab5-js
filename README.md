@@ -1,4 +1,4 @@
-# 🚀 Chat en JavaScript (Lab 5)
+# 🚀 Chat en JavaScript (Lab 5) https://23208.dernait.my/lab5-js/chat.html
 
 Este proyecto es un chat en tiempo real desarrollado en JavaScript puro, sin librerías externas. Se conecta al servidor [https://chat.nrywhite.lat/chats](https://chat.nrywhite.lat/chats) utilizando `GET` y `POST` para enviar y recibir mensajes.
 

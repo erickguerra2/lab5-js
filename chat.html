@@ -1,0 +1,154 @@
+<html>
+    <head>
+        <title>Chat en JavaScript</title>
+    </head>
+    <body>
+        <script type="application/javascript">
+
+            const container = document.createElement("div");
+            container.style.width = "100%";
+            container.style.height = "100vh";
+            container.style.display = "flex";
+            container.style.flexDirection = "column";
+            container.style.background = localStorage.getItem("theme") === "dark" ? "#222" : "#fff";
+            container.style.color = localStorage.getItem("theme") === "dark" ? "#fff" : "#000";
+
+            const mensajeList = document.createElement("div");
+            mensajeList.style.flex = "1";
+            mensajeList.style.overflowY = "auto";
+            mensajeList.style.padding = "10px";
+
+            const inputContainer = document.createElement("div");
+            inputContainer.style.display = "flex";
+            inputContainer.style.padding = "10px";
+            inputContainer.style.borderTop = "1px solid #ccc";
+            inputContainer.style.background = localStorage.getItem("theme") === "dark" ? "#333" : "#f9f9f9";
+
+            const inputField = document.createElement("input");
+            inputField.type = "text";
+            inputField.placeholder = "Escribe tu mensaje...";
+            inputField.style.flex = "1";
+            inputField.style.padding = "10px";
+            inputField.style.fontSize = "16px";
+            inputField.style.border = "none";
+            inputField.style.outline = "none";
+            inputField.style.borderRadius = "5px";
+            inputField.style.maxLength = "140";
+
+            inputField.addEventListener("input", () => {
+                if (inputField.value.length > 140) {
+                    inputField.value = inputField.value.slice(0, 140);
+                }
+            });
+
+            inputField.addEventListener("keypress", (e) => {
+                if (e.key === "Enter") {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+
+            const sendButton = document.createElement("button");
+            sendButton.innerText = "Enviar";
+            sendButton.style.marginLeft = "10px";
+            sendButton.style.padding = "10px";
+            sendButton.style.cursor = "pointer";
+
+            const themeButton = document.createElement("button");
+            themeButton.innerText = "Modo Oscuro";
+            themeButton.style.padding = "10px";
+            themeButton.style.margin = "10px";
+            themeButton.style.cursor = "pointer";
+            themeButton.onclick = () => {
+                const newTheme = localStorage.getItem("theme") === "dark" ? "light" : "dark";
+                localStorage.setItem("theme", newTheme);
+                location.reload();
+            };
+
+            async function fetchmensaje() {
+                try {
+                    const respuesta = await fetch("https://chat.nrywhite.lat/chats");
+                    const mensaje = await respuesta.json();
+                    ListaMensaje.innerHTML = "";
+
+                    mensaje.forEach(({ username, message }) => {
+                        const messageElement = document.createElement("div");
+                        messageElement.style.padding = "10px";
+                        messageElement.style.marginBottom = "5px";
+                        messageElement.style.borderRadius = "5px";
+                        messageElement.style.background = localStorage.getItem("theme") === "dark" ? "#444" : "#eee";
+
+                        const mensajeUsuario = document.createElement("strong");
+                        mensajeUsuario.innerText = username + ": ";
+                        messageElement.appendChild(mensajeUsuario);
+
+                        const imageRegex = /(https?:\/\/.*\.(?:png|jpg|jpeg|gif))/gi;
+                        const match = message.match(imageRegex);
+
+                        if (match) {
+                            const img = document.createElement("img");
+                            img.src = match[0];
+                            img.style.maxWidth = "200px";
+                            img.style.borderRadius = "5px";
+                            img.style.marginTop = "5px";
+
+                            messageElement.appendChild(img);
+                        } else if (message.startsWith("http")) {
+                            const link = document.createElement("a");
+                            link.href = message;
+                            link.innerText = message;
+                            link.target = "_blank";
+                            messageElement.appendChild(link);
+                        } else {
+                            const textNode = document.createTextNode(message);
+                            messageElement.appendChild(textNode);
+                        }
+
+                        mensajeList.appendChild(messageElement);
+                    });
+
+                    mensajeList.scrollTop = mensajeList.scrollHeight;
+                } catch (error) {
+                    console.error("Error obteniendo mensajes:", error);
+                }
+            }
+
+
+
+            async function sendMessage() {
+                const text = inputField.value.trim();
+                if (text.length === 0 || text.length > 140) return;
+
+                console.log("Mandando mensaje:", text);
+
+                try {
+                    const respuesta = await fetch("https://chat.nrywhite.lat/chats", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({username: Erick, message: text }) 
+                    });
+
+                    if (!respuesta.ok) throw new Error(`HTTP error! Status: ${respuesta.status}`);
+
+                    console.log("Mensaje enviado correctamente");
+                    inputField.value = "";
+                    fetchmensaje();
+                } catch (error) {
+                    console.error("Error enviando mensaje:", error);
+                }
+            }
+
+
+            sendButton.onclick = sendMessage;
+            container.appendChild(themeButton);
+            container.appendChild(mensajeList);
+            inputContainer.appendChild(inputField);
+            inputContainer.appendChild(sendButton);
+            container.appendChild(inputContainer);
+            document.body.appendChild(container);
+
+            fetchmensaje();
+            setInterval(fetchmensaje, 5000);
+        </script>
+    </body>
+</html>
